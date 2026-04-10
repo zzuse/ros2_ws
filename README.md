@@ -49,7 +49,8 @@ source install/setup.bash # local src
 ros2 service list
 ```
 GUI control 
-rqt -> plugin -> service caller
+rqt -> plugin -> Services -> Caller
+rqt -> plugin -> Configuration -> Dynamic
 
 ## Building
 

@@ -2,14 +2,39 @@
 #include "rclcpp/rclcpp.hpp"
 #include "turtlesim/msg/pose.hpp"
 #include "chapt4_interfaces/srv/patrol.hpp"
+#include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 using Patrol = chapt4_interfaces::srv::Patrol;
+using SetParametersResult = rcl_interfaces::msg::SetParametersResult;
 
 class TurtleControlNode : public rclcpp::Node
 {
 public:
     TurtleControlNode() : Node("turtle_control_node")
     {
+        this->declare_parameter<double>("k", 1.0);
+        this->declare_parameter<double>("max_speed", 3.0);
+        this->get_parameter("k", k_);
+        this->get_parameter("max_speed", max_speed_);
+        parameter_callback_handle_ = this->add_on_set_parameters_callback([&](const std::vector<rclcpp::Parameter> &params) -> SetParametersResult {
+            SetParametersResult result;
+            result.successful = true; // Assume success unless we find an invalid parameter
+            for (const auto &param : params) {
+                if (param.get_name() == "k" && param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) {
+                    k_ = param.as_double();
+                    RCLCPP_INFO(this->get_logger(), "Updated parameter k: %.2f", k_);
+                } else if (param.get_name() == "max_speed" && param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) {
+                    max_speed_ = param.as_double();
+                    RCLCPP_INFO(this->get_logger(), "Updated parameter max_speed: %.2f", max_speed_);
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "Invalid parameter: %s", param.get_name().c_str());
+                    result.successful = false; // Mark as unsuccessful if we find an invalid parameter
+                    result.reason = "Invalid parameter: " + param.get_name();
+                    break; // Exit the loop on the first invalid parameter
+                }
+            }
+            return result;
+        });
         patrol_service_ = this->create_service<Patrol>("patrol", [&](const Patrol::Request::SharedPtr request,
             Patrol::Response::SharedPtr response) -> void{
                 if( (0.0 < request->target_x && request->target_x < 11.0f) &&
@@ -53,6 +78,7 @@ private:
     }
 
 private:
+    OnSetParametersCallbackHandle::SharedPtr parameter_callback_handle_;
     rclcpp::Service<Patrol>::SharedPtr patrol_service_;
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr pose_subscription_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_publisher_;
