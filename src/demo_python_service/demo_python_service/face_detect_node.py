@@ -27,7 +27,7 @@ class FaceDetectNode(Node):
             self.get_logger().info('No image provided in the request, using default image.')
         
         start_time = time.time()
-        self.get_logger().info('Starting face detection...')
+        self.get_logger().info('Face Loaded... starting face detection...')
         face_locations = face_recognition.face_locations(cv_image, number_of_times_to_upsample=self.number_of_times_to_unsample, model=self.model)
         end_time = time.time()
         response.use_time=end_time - start_time

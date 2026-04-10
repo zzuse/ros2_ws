@@ -24,10 +24,12 @@ class FaceDetectClientNode(Node):
         request = FaceDetector.Request()
         request.image = self.bridge.cv2_to_imgmsg(self.image, "passthrough")
         future = self.client.call_async(request)
-        rclpy.spin_until_future_complete(self,future)
-        response = future.result()
-        self.get_logger().info(f'Number of faces detected: {response.number}')
-        self.show_response(response)
+        # rclpy.spin_until_future_complete(self,future)
+        def handle_response(future):
+            response = future.result()
+            self.get_logger().info(f'Number of faces detected: {response.number}, using time: {response.use_time:.4f} seconds')
+            self.show_response(response)
+        future.add_done_callback(handle_response)
 
 
     def show_response(self, response):
@@ -45,5 +47,5 @@ def main():
     rclpy.init()
     node = FaceDetectClientNode()
     node.send_request()
-    # rclpy.spin(node) # No need to spin after send_request as it uses spin_until_future_complete and then exits or waits for key
+    rclpy.spin(node) # No need to spin if send_request uses spin_until_future_complete and then exits
     rclpy.shutdown()
