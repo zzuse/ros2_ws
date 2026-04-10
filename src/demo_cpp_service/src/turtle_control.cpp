@@ -12,8 +12,8 @@ public:
     {
         patrol_service_ = this->create_service<Patrol>("patrol", [&](const Patrol::Request::SharedPtr request,
             Patrol::Response::SharedPtr response) -> void{
-                if( (0.0 < request->target_x && request->target_x < 12.0f) &&
-                    (0.0 < request->target_y && request->target_y < 12.0f)) {
+                if( (0.0 < request->target_x && request->target_x < 11.0f) &&
+                    (0.0 < request->target_y && request->target_y < 11.0f)) {
                     target_x_ = request->target_x;
                     target_y_ = request->target_y;
                     response->result = Patrol::Response::SUCCESS; // success
@@ -39,12 +39,12 @@ private:
         double angele = std::atan2(target_y_ - current_y, target_x_ - current_x) - msg->theta;
         if(distance > 0.1) {
             if (fabs(angele) > 0.2) {
-                message.angular.z = fabs(angele);
+                message.angular.z = angele;
+                message.linear.x = 0.0;
             } else {
                 message.linear.x = k_ * distance;
+                message.angular.z = angele;
             }
-            message.linear.x = 1.0;
-            message.angular.z = angele;
         }
         if (message.linear.x > max_speed_) {
             message.linear.x = max_speed_;
