@@ -39,6 +39,7 @@ ros2 pkg create demo_python_service --build-type ament_python --dependencies rcl
 sudo apt install python3-opencv
 sudo apt install ros-jazzy-cv-bridge
 sudo apt install ros-jazzy-vision-opencv
+sudo apt install ros-jazzy-launch-ros
 pip3 install face_recognition
 ```
 ENV source
@@ -75,6 +76,12 @@ source install/setup.bash
 3. Run the patrol client:
    ```bash
    ros2 run demo_cpp_service patrol_client
+   ```
+4. or Run with lauch script
+   ```
+   ros2 launch demo_cpp_service demo.launch.py
+   ros2 launch demo_cpp_service demo.launch.py background_green:=255
+   ros2 launch demo_cpp_service actions.launch.py rqt_startup:=True
    ```
 
 ### Face Detection (Python)
