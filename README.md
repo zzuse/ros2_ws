@@ -31,6 +31,15 @@ Python implementation of face detection services.
 ros2 pkg create demo_python_service --build-type ament_python --dependencies rclpy chapt4_interfaces --license Apache-2.0
 ```
 
+### 4. `demo_python_tf`
+Python implementaion of cordinate transformation
+```sh
+ros2 pkg create --build-type ament_python --dependencies rclpy geometry_msgs tf_ros tf_transformations --license Apache-2.0 demo_python_tf
+```
+
+
+
+
 ## Prerequisites
 - ROS 2 (jazzy or newer recommended)
 - `turtlesim` package
@@ -99,6 +108,48 @@ source install/setup.bash
     ros2 run demo_python_service learn_face_detect
     ros2 service call /face_detect chapt4_interfaces/srv/FaceDetector
     ```
+
+### Cordinate Transformation
+
+1. base_link to base_laser
+   ```
+   ros2 run tf2_ros static_transform_publisher --x 0.1 --y 0.0 --z 0.2 --roll 0.0 --pitch 0.0 --yaw 0.0 --frame-id base_link --child-frame-id base_laser
+   ```
+2. 发布base_laser到wall_point之间的变换：
+   ```
+   ros2 run tf2_ros static_transform_publisher --x 0.3 --y 0.0 --z 0.0 --roll 0.0 --pitch 0.0 --yaw 0.0 --frame-id base_laser --child-frame-id wall_point
+   ```
+3. 查询base_link到wall_point之间的关系：
+   ```
+   ros2 run tf2_ros tf2_echo base_link wall_point
+   ros2 run tf2_tools view_frames
+   ros2 topic list
+   ros2 topic info /tf_static
+   ros2 interface show tf2_msgs/msg/TFMessage
+   ros2 topic echo /tf_static
+   ```
+4. 3D 可视化
+   https://mrpt.github.io/webapp-demos/3d-rotation-converter.html
+   ```
+   sudo apt install ros-jazzy-mrpt-apps
+   LIBGL_ALWAYS_SOFTWARE=1 3d-rotation-converter
+   ```
+5. python static tf
+   ```
+   ros2 run demo_python_tf static_tf_broadcaster
+   ros2 topic info /tf_static -v
+   ros2 run tf2_ros tf2_echo base_link camera_link
+   ```
+6. python dynamic tf
+   ```
+   ros2 run demo_python_tf dynamic_tf_broadcaster
+   ros2 topic hz /tf
+   ros2 run tf2_ros tf2_echo camera_link bottle_link
+   ```
+7. python tf listener
+   ```
+   ros2 run demo_python_tf tf_listener
+   ```
 
 ## Recent Fixes
 - **Turtle Collision Fix**: Updated `patrol_client.cpp` and `turtle_control.cpp` to ensure random coordinates stay within bounds (1.0-10.0) and improved turn-in-place logic to prevent wide arcs hitting walls.
