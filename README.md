@@ -42,6 +42,10 @@ ros2 pkg create --build-type ament_python --dependencies rclpy geometry_msgs tf2
 ros2 pkg create demo_cpp_tf --build-type ament_cmake --dependencies rclcpp tf2_ros geometry_msgs tf2_geometry_msgs --license Apache-2.0
 ```
 
+### 6. `fishbot_description`
+```sh
+ros2 pkg create fishbot_description --build-type ament_cmake --license Apache-2.0
+```
 
 ## Prerequisites
 - ROS 2 (jazzy or newer recommended)
@@ -152,6 +156,22 @@ source install/setup.bash
 7. python tf listener
    ```
    ros2 run demo_python_tf tf_listener
+   ```
+
+### Rviz2 display robot model
+
+1. Generate model relations
+   ```
+   urdf_to_graphviz first_robot.urdf
+   ```
+2. Install dependency for state tf messages
+   ```
+   sudo apt install ros-$ROS_DISTRO-joint-state-publisher
+   sudo apt install ros-$ROS_DISTRO-robot-state-publisher
+   ```
+3. Run Rviz2 to display model and receive state publish
+   ```
+   ros2 launch fishbot_description display_robot.launch.py
    ```
 
 ## Recent Fixes
