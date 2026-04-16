@@ -163,15 +163,19 @@ source install/setup.bash
 1. Generate model relations
    ```
    urdf_to_graphviz first_robot.urdf
+   xacro src/fishbot_description/urdf/first_robot.xacro
    ```
 2. Install dependency for state tf messages
    ```
    sudo apt install ros-$ROS_DISTRO-joint-state-publisher
    sudo apt install ros-$ROS_DISTRO-robot-state-publisher
+   sudo apt install ros-$ROS_DISTRO-xacro
+   
    ```
 3. Run Rviz2 to display model and receive state publish
    ```
    ros2 launch fishbot_description display_robot.launch.py
+   ros2 launch fishbot_description display_robot.launch.py model:=src/fishbot_description/urdf/first_robot.xacro
    ```
 
 ## Recent Fixes

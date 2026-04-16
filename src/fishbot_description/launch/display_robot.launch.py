@@ -14,7 +14,7 @@ def generate_launch_description():
         default_value=str(urdf_path),
         description='Path to the URDF file'
     )
-    command_result = launch.substitutions.Command(['cat ', launch.substitutions.LaunchConfiguration('model')])
+    command_result = launch.substitutions.Command(['xacro ', launch.substitutions.LaunchConfiguration('model')])
     robot_description_value = launch_ros.parameter_descriptions.ParameterValue(command_result, value_type=str)
     action_robot_state_publisher = launch_ros.actions.Node(
         package='robot_state_publisher',
