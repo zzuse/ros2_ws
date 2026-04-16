@@ -164,6 +164,7 @@ source install/setup.bash
    ```
    urdf_to_graphviz first_robot.urdf
    xacro src/fishbot_description/urdf/first_robot.xacro
+   xacro src/fishbot_description/urdf/fishbot.urdf.xacro
    ```
 2. Install dependency for state tf messages
    ```
