@@ -176,7 +176,7 @@ source install/setup.bash
 3. Run Rviz2 to display model and receive state publish
    ```
    ros2 launch fishbot_description display_robot.launch.py
-   ros2 launch fishbot_description display_robot.launch.py model:=src/fishbot_description/urdf/first_robot.xacro
+   ros2 launch fishbot_description display_robot.launch.py model:=install/fishbot_description/share/fishbot_description/urdf/fishbot.urdf.xacro
    ```
 
 ## Recent Fixes
