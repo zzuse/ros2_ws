@@ -28,5 +28,18 @@
                 <child link="${caster_name}_link"/>
             <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
         </joint>
-    </xacro:macro> 
+        <gazebo reference="${caster_name}_link">
+            <material>
+                Gazebo/Yellow
+            </material>
+            <!-- 切向摩擦系数 -->
+            <mu1 value="0.0"/>
+            <!-- 法向摩擦系数 -->
+            <mu2 value="0.0"/>
+            <!-- 接触刚度系数 -->
+            <kp value="1000000000.0"/>
+            <!-- 阻尼系数 -->
+            <kd value="1.0"/>
+        </gazebo>
+    </xacro:macro>
 </robot>

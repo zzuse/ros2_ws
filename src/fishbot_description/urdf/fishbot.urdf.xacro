@@ -7,6 +7,7 @@
 <xacro:include filename="$(find fishbot_description)/urdf/sensor/laser.urdf.xacro"/>
 <xacro:include filename="$(find fishbot_description)/urdf/actuator/wheel.urdf.xacro"/>
 <xacro:include filename="$(find fishbot_description)/urdf/actuator/caster.urdf.xacro"/>
+<xacro:include filename="$(find fishbot_description)/urdf/plugin/gazebo_control_plugin.xacro"/>
 
 <xacro:base_xacro length="0.12" radius="0.10"/>
 <xacro:imu_xacro xyz="0.0 0.0 0.02"/>
@@ -16,6 +17,6 @@
 <xacro:wheel_xacro wheel_name="front_right_wheel" xyz="0.0 -0.10 -0.06"/>
 <xacro:caster_xacro caster_name="front_caster" xyz="0.08 0.0 -0.076"/>
 <xacro:caster_xacro caster_name="rear_caster" xyz="-0.08 0.0 -0.076"/>
-
+<xacro:gazebo_control_plugin/>
 
 </robot>

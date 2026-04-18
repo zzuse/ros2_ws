@@ -65,9 +65,18 @@ ENV source
 source install/setup.bash # local src
 ros2 service list
 ```
-GUI control 
+GUI control
+```
 rqt -> plugin -> Services -> Caller
 rqt -> plugin -> Configuration -> Dynamic
+rqt -> plugin -> Visualization -> TF tree
+sudo apt install ros-$ROS_DISTRO-rqt-tf-tree
+mv ~/.config/ros.org/rqt_gui.ini ~/.config/ros.org/rqt_gui.ini.bak
+```
+Keyboard control robot
+```
+sudo apt install ros-$ROS_DISTRO-teleop-twist-keyboard
+```
 
 ## Building
 
@@ -158,7 +167,7 @@ source install/setup.bash
    ros2 run demo_python_tf tf_listener
    ```
 
-### Rviz2 display robot model
+###  Display robot model
 
 1. Generate model relations
    ```
@@ -179,10 +188,12 @@ source install/setup.bash
    ros2 launch fishbot_description display_robot.launch.py
    ros2 launch fishbot_description display_robot.launch.py model:=install/fishbot_description/share/fishbot_description/urdf/fishbot.urdf.xacro
    ```
-4. Run Gazebo to display robot model
+4. Run Gazebo to display robot model, using keyboard to control it
    ```
    ros2 launch fishbot_description gz_sim.launch.py
+   ros2 topic list
+   ros2 topic info /cmd_vel
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard  # run keyboard control
+   rqt    # plugin tf-tree can show the topic relation
+   rviz2  # show topic dynamic
    ```
-
-## Recent Fixes
-- **Turtle Collision Fix**: Updated `patrol_client.cpp` and `turtle_control.cpp` to ensure random coordinates stay within bounds (1.0-10.0) and improved turn-in-place logic to prevent wide arcs hitting walls.
