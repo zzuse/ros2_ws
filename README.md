@@ -171,12 +171,17 @@ source install/setup.bash
    sudo apt install ros-$ROS_DISTRO-joint-state-publisher
    sudo apt install ros-$ROS_DISTRO-robot-state-publisher
    sudo apt install ros-$ROS_DISTRO-xacro
+   sudo apt install ros-${ROS_DISTRO}-ros-gz
    
    ```
 3. Run Rviz2 to display model and receive state publish
    ```
    ros2 launch fishbot_description display_robot.launch.py
    ros2 launch fishbot_description display_robot.launch.py model:=install/fishbot_description/share/fishbot_description/urdf/fishbot.urdf.xacro
+   ```
+4. Run Gazebo to display robot model
+   ```
+   ros2 launch fishbot_description gz_sim.launch.py
    ```
 
 ## Recent Fixes
