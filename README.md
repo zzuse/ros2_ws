@@ -195,5 +195,5 @@ source install/setup.bash
    ros2 topic info /cmd_vel
    ros2 run teleop_twist_keyboard teleop_twist_keyboard  # run keyboard control
    rqt    # plugin tf-tree can show the topic relation
-   rviz2  # show topic dynamic
+   rviz2  # show topic dynamic, like pointcloud2, odometry arraws
    ```
