@@ -54,6 +54,11 @@ def generate_launch_description():
         config_file=LaunchConfiguration('config_file')
     )
 
+    action_load_joint_state_controller = launch.actions.ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_state_broadcaster'],
+        output='screen'
+    )
+
     return launch.LaunchDescription([
         action_declare_arg_model_path,
         action_robot_state_publisher,
@@ -61,5 +66,10 @@ def generate_launch_description():
         spawn_model,
         bridge_name,
         config_file,
-        ros_gz_bridge
+        ros_gz_bridge,
+        launch.actions.RegisterEventHandler(
+            event_handler=launch.event_handlers.OnProcessExit(
+                target_action=spawn_model,
+                on_exit=[action_load_joint_state_controller]
+            ))
     ])

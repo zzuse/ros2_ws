@@ -197,3 +197,14 @@ source install/setup.bash
    rqt    # plugin tf-tree can show the topic relation
    rviz2  # show topic dynamic, like pointcloud2, odometry arraws
    ```
+5. ros2-controller to simulate hardware
+   ```
+   sudo apt install ros-$ROS_DISTRO-ros2-control
+   sudo apt info    ros-$ROS_DISTRO-ros2-controllers
+   sudo apt install ros-$ROS_DISTRO-ros2-controllers
+   sudo apt install ros-$ROS_DISTRO-gz-ros2-control
+   ros2 control list_hardware_interfaces
+   ros2 control list_hardware_components
+   ros2 control load_controller joint_state_broadcaster --set-state active
+   ros2 topic echo /joint_states --once
+   ```
