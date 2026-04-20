@@ -5,8 +5,8 @@
     <xacro:include filename="$(find fishbot_description)/urdf/fishbot_base.urdf.xacro"/>
     <xacro:fishbot_base/>
 
-    <!-- Include and attach ONLY the gazebo_control framework -->
-    <xacro:include filename="$(find fishbot_description)/urdf/plugin/gazebo_control_plugin.xacro"/>
-    <xacro:gazebo_control_plugin/>
+    <!-- Include and attach ONLY the ros2_control framework -->
+    <xacro:include filename="$(find fishbot_description)/urdf/fishbot.ros2_control.xacro"/>
+    <xacro:fishbot_ros2_control/>
 
 </robot>
