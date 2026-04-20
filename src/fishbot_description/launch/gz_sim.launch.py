@@ -59,6 +59,11 @@ def generate_launch_description():
         output='screen'
     )
 
+    action_load_effort_controller = launch.actions.ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'effort_controller'],
+        output='screen'
+    )
+
     return launch.LaunchDescription([
         action_declare_arg_model_path,
         action_robot_state_publisher,
@@ -71,5 +76,10 @@ def generate_launch_description():
             event_handler=launch.event_handlers.OnProcessExit(
                 target_action=spawn_model,
                 on_exit=[action_load_joint_state_controller]
+            )),
+        launch.actions.RegisterEventHandler(
+            event_handler=launch.event_handlers.OnProcessExit(
+                target_action=action_load_joint_state_controller,
+                on_exit=[action_load_effort_controller]
             ))
     ])

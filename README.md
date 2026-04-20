@@ -199,6 +199,7 @@ source install/setup.bash
    ```
 5. ros2-controller to simulate hardware
    ```
+   ros2 launch fishbot_description gz_control.launch.py
    sudo apt install ros-$ROS_DISTRO-ros2-control
    sudo apt info    ros-$ROS_DISTRO-ros2-controllers
    sudo apt install ros-$ROS_DISTRO-ros2-controllers
@@ -207,4 +208,13 @@ source install/setup.bash
    ros2 control list_hardware_components
    ros2 control load_controller joint_state_broadcaster --set-state active
    ros2 topic echo /joint_states --once
+   ros2 control list_controllers
+   ros2 control unload_controller joint_state_broadcaster
+   # effort control
+   ros2 topic list -t |grep effort
+   ros2 topic pub /effort_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.001, 0.001]}"
+   ros2 control list_hardware_interfaces
+   # diff wheel keyboard control
+   ros2 param dump /controller_manager
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
    ```
