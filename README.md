@@ -60,6 +60,7 @@ ros2 pkg create fishbot_application --build-type ament-python --license Apache-2
 ### 9. `autopatrol_robot`
 ```sh
 ros2 pkg create autopatrol_robot --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
+ros2 pkg create  autopatrol_interface --dependencies rosidl_default_generators
 ```
 
 
@@ -263,4 +264,8 @@ source install/setup.bash
    # Below also depends on gz_control.launch.py and navigation2.launch.py
    colcon build --packages-select autopatrol_robot
    ros2 run autopatrol_robot patrol_node --ros-args --params-file src/autopatrol_robot/config/patrol_config.yaml
+   sudo apt-get install espeak-ng -y
+   ros2 run autopatrol_robot speak # service 
+   ros2 service call /speak autopatrol_interface/srv/SpeechText "{text: good}" # client
+   ros2 launch autopatrol_robot autopatrol.launch.py
    ```

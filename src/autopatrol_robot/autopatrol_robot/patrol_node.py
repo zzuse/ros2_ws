@@ -4,6 +4,7 @@ from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from rclpy.node import Node
 from tf2_ros import TransformListener, Buffer
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from autopatrol_interface.srv import SpeechText
 import math
 
 
@@ -16,6 +17,7 @@ class PatrolNode(BasicNavigator):
         self.patrol_points_ = self.get_parameter('patrol_points').get_parameter_value().double_array_value
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.speech_client = self.create_client(SpeechText, 'speak')
 
 
     def get_pose_by_xyyaw(self, x, y, yaw):
@@ -65,26 +67,47 @@ class PatrolNode(BasicNavigator):
 
 
     def get_current_pose(self):
-        try:
-            t = self.tf_buffer.lookup_transform('map', 'base_footprint', rclpy.time.Time(seconds=0.0), rclpy.time.Duration(seconds=1.0))
-            transform = t.transform
-            translation = transform.translation
-            rotation = transform.rotation
-            euler = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])
-            self.get_logger().info(f'当前位姿: x={translation.x:.2f}, y={translation.y:.2f}, yaw={math.degrees(euler[2]):.2f}°')
-        except Exception as e:
-            self.get_logger().warn(f'无法获取当前位姿: {e}')
+        while rclpy.ok():
+            try:
+                t = self.tf_buffer.lookup_transform('map', 'base_footprint', rclpy.time.Time(seconds=0.0), rclpy.time.Duration(seconds=1.0))
+                transform = t.transform
+                translation = transform.translation
+                rotation = transform.rotation
+                euler = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])
+                self.get_logger().info(f'当前位姿: x={translation.x:.2f}, y={translation.y:.2f}, yaw={math.degrees(euler[2]):.2f}°')
+                return transform
+            except Exception as e:
+                self.get_logger().warn(f'无法获取当前位姿: {e}')
+
+
+    def speech_text(self, text):
+        while not self.speech_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('等待语音合成服务...')
+        request = SpeechText.Request()
+        request.text = text
+        future = self.speech_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        if future.result() is not None:
+            if future.result().result:
+                self.get_logger().info('语音合成成功')
+            else:
+                self.get_logger().warn('语音合成失败')
+        else:
+            self.get_logger().warn(f'调用语音合成服务失败: {future.exception()}')
 
 
 def main(args=None):
     rclpy.init(args=args)
 
     patrol = PatrolNode()
+    patrol.speech_text('正在初始化巡逻机器人...')
     patrol.init_robot_pose()
+    patrol.speech_text("巡逻开始")
 
     while rclpy.ok():
         points = patrol.get_target_points()
         for point in points:
+            patrol.speech_text(f'正在前往巡逻点: x={point[0]:.2f}, y={point[1]:.2f}')
             patrol.patrol(patrol.get_pose_by_xyyaw(point[0], point[1], point[2]))
             patrol.get_current_pose()
     
