@@ -42,23 +42,21 @@ class PatrolNode(BasicNavigator):
         target_points = []
         self.patrol_points_ = self.get_parameter('patrol_points').get_parameter_value().double_array_value
         for i in range(0, len(self.patrol_points_), 3):
-            x = self.patrol_points[i]
-            y = self.patrol_points[i + 1]
-            yaw = self.patrol_points[i + 2]
+            x = self.patrol_points_[i]
+            y = self.patrol_points_[i + 1]
+            yaw = self.patrol_points_[i + 2]
             target_points.append([x, y, yaw])
             self.get_logger().info(f'巡逻点: x={x:.2f}, y={y:.2f}, yaw={math.degrees(yaw):.2f}°')
         return target_points
 
 
     def patrol(self, point):
-        if not self.isNav2Active():
-            return
 
         self.goToPose(point)
         while not self.isTaskComplete():
             feedback = self.getFeedback()
             if feedback is not None:
-                self.get_logger().info(f'当前导航状态: {feedback.distance_remaining:.2f} m, {feedback.navigation_time:.2f} s')
+                self.get_logger().info(f'当前导航状态: {feedback.distance_remaining:.2f} m')
         result = self.getResult()
         if result == TaskResult.SUCCEEDED:
             self.get_logger().info('成功到达巡逻点')
@@ -67,16 +65,15 @@ class PatrolNode(BasicNavigator):
 
 
     def get_current_pose(self):
-        while rclpy.ok():
-            try:
-                t = self.tf_buffer.lookup_transform('map', 'base_footprint', rclpy.time.Time(seconds=0.0), rclpy.time.Duration(seconds=1.0))
-                transform = t.transform
-                translation = transform.translation
-                rotation = transform.rotation
-                euler = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])
-                self.get_logger().info(f'当前位姿: x={translation.x:.2f}, y={translation.y:.2f}, yaw={math.degrees(euler[2]):.2f}°')
-            except Exception as e:
-                self.get_logger().warn(f'无法获取当前位姿: {e}')
+        try:
+            t = self.tf_buffer.lookup_transform('map', 'base_footprint', rclpy.time.Time(seconds=0.0), rclpy.time.Duration(seconds=1.0))
+            transform = t.transform
+            translation = transform.translation
+            rotation = transform.rotation
+            euler = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])
+            self.get_logger().info(f'当前位姿: x={translation.x:.2f}, y={translation.y:.2f}, yaw={math.degrees(euler[2]):.2f}°')
+        except Exception as e:
+            self.get_logger().warn(f'无法获取当前位姿: {e}')
 
 
 def main(args=None):

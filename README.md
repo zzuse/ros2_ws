@@ -258,4 +258,9 @@ source install/setup.bash
    ros2 interface show nav2_msgs/action/FollowWaypoints
    ros2 run fishbot_application waypoint_follower
    ```
-
+7. ros2 autopatrol_robot
+   ```
+   # Below also depends on gz_control.launch.py and navigation2.launch.py
+   colcon build --packages-select autopatrol_robot
+   ros2 run autopatrol_robot patrol_node --ros-args --params-file src/autopatrol_robot/config/patrol_config.yaml
+   ```
