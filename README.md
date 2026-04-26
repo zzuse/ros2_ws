@@ -245,12 +245,17 @@ source install/setup.bash
    ros2 run nav2_map_server map_saver_cli -f room # save map in maps directroy 
    sudo apt install ros-$ROS_DISTRO-navigation2
    sudo apt install ros-$ROS_DISTRO-nav2-bringup
-   cp /opt/ros/$ROS_DISTRO/share/nav2_bringup/params/nav2_params.yaml src/fishbot_navigation2/config/. # robot_radius: 0.12
+   # template
+   cp /opt/ros/$ROS_DISTRO/share/nav2_bringup/params/nav2_params.yaml src/fishbot_navigation2/ config/. # robot_radius: 0.12
+   # Below also depends on gz_control.launch.py and navigation2.launch.py
    ros2 run fishbot_application init_robot_pose
    ros2 run fishbot_application get_robot_pose
+   ros2 action list -t
+   ros2 interface show nav2_msgs/action/NavigateToPose
    ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "{pose: {header: {frame_id: map}, pose: {position: {x: 2.0, y: 1.0} }}}" --feedback
    ros2 run fishbot_application nav_to_pose
    ros2 action info /follow_waypoints -t
+   ros2 interface show nav2_msgs/action/FollowWaypoints
    ros2 run fishbot_application waypoint_follower
    ```
 

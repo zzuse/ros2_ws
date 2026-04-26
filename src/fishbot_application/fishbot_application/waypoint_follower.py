@@ -24,6 +24,14 @@ def main(args=None):
     goal_pose1.pose.orientation.w = 1.0
     goal_poses.append(goal_pose1)
 
+    goal_pose2 = PoseStamped()
+    goal_pose2.header.frame_id = 'map'
+    goal_pose2.pose.orientation.x = 0.0
+    goal_pose2.pose.orientation.y = 0.0
+    goal_pose2.pose.orientation.w = 1.0
+    goal_poses.append(goal_pose2)
+
+
     # Set the initial pose of the robot
     navigator.followWaypoints(goal_poses)
     while not navigator.isTaskComplete():
