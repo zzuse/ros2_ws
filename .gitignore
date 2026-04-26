@@ -6,3 +6,4 @@ log/
 *.pyo
 *.pyd
 .DS_Store
+patrol*.png
