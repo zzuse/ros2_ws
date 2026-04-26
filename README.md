@@ -1,4 +1,4 @@
-# Chapt4 ROS 2 Workspace
+# ROS 2 Workspace
 
 This workspace contains various ROS 2 packages demonstrating Service-Client communication patterns in C++ and Python.
 
@@ -47,6 +47,22 @@ ros2 pkg create demo_cpp_tf --build-type ament_cmake --dependencies rclcpp tf2_r
 ros2 pkg create fishbot_description --build-type ament_cmake --license Apache-2.0
 ```
 
+### 7. `fishbot_navigation2`
+```sh
+ros2 pkg create fishbot_navigation2
+```
+
+### 8. `fishbot_application`
+```sh
+ros2 pkg create fishbot_application --build-type ament-python --license Apache-2.0
+```
+
+### 9. `autopatrol_robot`
+```sh
+ros2 pkg create autopatrol_robot --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
+```
+
+
 ## Prerequisites
 - ROS 2 (jazzy or newer recommended)
 - `turtlesim` package
@@ -81,7 +97,7 @@ sudo apt install ros-$ROS_DISTRO-teleop-twist-keyboard
 ## Building
 
 ```bash
-cd ~/chapt4/chapt4_ws
+cd ~/workspace
 colcon build
 source install/setup.bash
 ```
@@ -218,3 +234,23 @@ source install/setup.bash
    ros2 param dump /controller_manager
    ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
    ```
+6. ros2 navigation
+   ```
+   ros2 launch fishbot_navigation2 navigation2.launch.py use_sim_time:=True
+   sudo apt install ros-jazzy-twist-mux # translate all cmd message to stamped
+   sudo apt install ros-$ROS_DISTRO-slam-toolbox
+   ros2 launch slam_toolbox online_async_launch.py use_sim_time:=True
+   rviz2 #open map subscription, then scan the map
+   sudo apt install ros-$ROS_DISTRO-nav2-map-server
+   ros2 run nav2_map_server map_saver_cli -f room # save map in maps directroy 
+   sudo apt install ros-$ROS_DISTRO-navigation2
+   sudo apt install ros-$ROS_DISTRO-nav2-bringup
+   cp /opt/ros/$ROS_DISTRO/share/nav2_bringup/params/nav2_params.yaml src/fishbot_navigation2/config/. # robot_radius: 0.12
+   ros2 run fishbot_application init_robot_pose
+   ros2 run fishbot_application get_robot_pose
+   ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "{pose: {header: {frame_id: map}, pose: {position: {x: 2.0, y: 1.0} }}}" --feedback
+   ros2 run fishbot_application nav_to_pose
+   ros2 action info /follow_waypoints -t
+   ros2 run fishbot_application waypoint_follower
+   ```
+

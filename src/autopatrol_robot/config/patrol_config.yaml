@@ -1,0 +1,15 @@
+/patrol_node:
+  ros__parameters:
+    initial_pose:
+    - 0.0
+    - 0.0
+    - 0.0
+    patrol_points:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    - 1.0
+    - 1.57
+    start_type_description_service: true
+    use_sim_time: false

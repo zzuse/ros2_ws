@@ -1,4 +1,5 @@
 import os
+import launch
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler
@@ -14,7 +15,7 @@ def generate_launch_description():
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
     default_model_path = os.path.join(pkg_fishbot_description, 'urdf', 'fishbot_ros2_control.urdf.xacro')
-    default_world_path = os.path.join(pkg_fishbot_description, 'world', 'custom_room.sdf')
+    default_world_path = os.path.join(pkg_fishbot_description, 'world', 'custom_room1a.world')
     default_bridge_yaml_path = os.path.join(pkg_fishbot_description, 'config', 'bridge.yaml')
 
     model_arg = DeclareLaunchArgument(
@@ -30,7 +31,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_description}]
+        parameters=[{'robot_description': robot_description, 'use_sim_time': True}]
     )
 
     action_launch_gazebo = IncludeLaunchDescription(
@@ -40,6 +41,24 @@ def generate_launch_description():
         launch_arguments={'gz_args': f'-r {default_world_path}'}.items(),
     )
 
+    # 设置 Gazebo 资源路径
+    gazebo_resource_path = launch.actions.SetEnvironmentVariable(
+        name='GZ_SIM_RESOURCE_PATH',
+        value=[
+            os.path.join(pkg_fishbot_description, 'world'),
+            ':',
+            os.path.join(pkg_fishbot_description, 'materials', 'textures')
+        ]
+    )
+
+    ign_gazebo_resource_path = launch.actions.SetEnvironmentVariable(
+        name='IGN_GAZEBO_RESOURCE_PATH',
+        value=[
+            os.path.join(pkg_fishbot_description, 'world'),
+            ':',
+            os.path.join(pkg_fishbot_description, 'materials', 'textures')
+        ]
+    )
     spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
@@ -68,6 +87,8 @@ def generate_launch_description():
     return LaunchDescription([
         model_arg,
         action_robot_state_publisher_node,
+        gazebo_resource_path,
+        ign_gazebo_resource_path,
         action_launch_gazebo,
         spawn_entity,
         bridge_name,

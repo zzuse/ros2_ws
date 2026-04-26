@@ -1,0 +1,17 @@
+# twist_mux_config.yaml
+twist_mux:
+  ros__parameters:
+    use_stamped: true
+    topics:
+      navigation:
+        topic: /cmd_vel_nav        # from Nav2 controller+smoother
+        timeout: 0.5
+        priority: 10
+      collision:
+        topic: /cmd_vel_smoothed  # from collision_monitor
+        timeout: 0.5
+        priority: 20              # higher = takes precedence
+      docking:
+        topic: /cmd_vel_teleop       # behavior_server
+        timeout: 0.5
+        priority: 30
