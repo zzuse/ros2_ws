@@ -60,7 +60,11 @@ ros2 pkg create fishbot_application --build-type ament-python --license Apache-2
 ### 9. `autopatrol_robot`
 ```sh
 ros2 pkg create autopatrol_robot --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
-ros2 pkg create  autopatrol_interface --dependencies rosidl_default_generators
+ros2 pkg create autopatrol_interface --dependencies rosidl_default_generators
+```
+### 10. `motion_control`
+```sh
+ros2 pkg create motion_control_system --dependencies pluginlib --license Apache-2.0
 ```
 
 
@@ -184,7 +188,7 @@ source install/setup.bash
    ros2 run demo_python_tf tf_listener
    ```
 
-###  Display robot model
+###  Display robot model and Run simulation
 
 1. Generate model relations
    ```
@@ -268,4 +272,8 @@ source install/setup.bash
    ros2 run autopatrol_robot speak # service 
    ros2 service call /speak autopatrol_interface/srv/SpeechText "{text: good}" # client
    ros2 launch autopatrol_robot autopatrol.launch.py
+   ```
+8. ros2 navigation plugin
+   ```
+   sudo apt install ros-$ROS_DISTRO-pluginlib -y
    ```
