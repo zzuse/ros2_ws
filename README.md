@@ -62,9 +62,10 @@ ros2 pkg create fishbot_application --build-type ament-python --license Apache-2
 ros2 pkg create autopatrol_robot --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
 ros2 pkg create autopatrol_interface --dependencies rosidl_default_generators
 ```
-### 10. `motion_control`
+### 10. `motion_control planner`
 ```sh
 ros2 pkg create motion_control_system --dependencies pluginlib --license Apache-2.0
+ros2 pkg create nav2_custom_planner --dependencies pluginlib nav2_core --license Apache-2.0
 ```
 
 
@@ -276,4 +277,8 @@ source install/setup.bash
 8. ros2 navigation plugin
    ```
    sudo apt install ros-$ROS_DISTRO-pluginlib -y
+   ros2 run motion_control_system test_plugin motion_control_system/SpinMotionController
+   ros2 interface show nav_msgs/msg/Path # 路径
+   ros2 interface show geometry_msgs/msg/PoseStamped # 位置
+   ros2 interface show nav_msgs/msg/OccupancyGrid # 占据栅格
    ```

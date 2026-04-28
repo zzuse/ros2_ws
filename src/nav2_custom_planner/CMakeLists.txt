@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(motion_control_system)
+project(nav2_custom_planner)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(nav2_core REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -24,30 +25,21 @@ endif()
 include_directories(
   include
 )
-add_library(spin_motion_controller SHARED
-  src/spin_motion_controller.cpp
-)
-ament_target_dependencies(spin_motion_controller
-  pluginlib
-)
+set(library_name ${PROJECT_NAME}_plugin)
 
-add_executable(test_plugin src/test_plugin.cpp)
-ament_target_dependencies(test_plugin
+add_library(${library_name} SHARED
+  src/nav2_custom_planner.cpp
+)
+ament_target_dependencies(${library_name}
   pluginlib
+  nav2_core
 )
-install(TARGETS test_plugin
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(TARGETS spin_motion_controller
+install(TARGETS ${library_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
+install(DIRECTORY include/ DESTINATION include/)
+pluginlib_export_plugin_description_file(nav2_core custom_planner_plugin.xml)
 
-install(DIRECTORY include/
-  DESTINATION include
-)
-
-pluginlib_export_plugin_description_file(motion_control_system spin_motion_plugins.xml)
 ament_package()
