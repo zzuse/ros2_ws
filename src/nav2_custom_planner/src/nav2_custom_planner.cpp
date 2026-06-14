@@ -45,8 +45,55 @@ namespace nav2_custom_planner
         const geometry_msgs::msg::PoseStamped & goal,
         std::function<bool()> cancel_checker)
     {
-        nav_msgs::msg::Path path;
-        return path;
+        nav_msgs::msg::Path global_path;
+        global_path.poses.clear();
+        global_path.header.stamp = node_->now();
+        global_path.header.frame_id = global_frame_;
+
+        if (start.header.frame_id != global_frame_ || goal.header.frame_id != global_frame_) {
+            RCLCPP_ERROR(node_->get_logger(), "Start or goal frame_id does not match global frame_id");
+            return global_path;
+        }
+
+        int total_number_of_loop = 
+            std::hypot(goal.pose.position.x - start.pose.position.x, goal.pose.position.y - start.pose.position.y) / resolution_;
+        double x_increment = (goal.pose.position.x - start.pose.position.x) / total_number_of_loop;
+        double y_increment = (goal.pose.position.y - start.pose.position.y) / total_number_of_loop;
+
+        for (int i = 0; i < total_number_of_loop; ++i) {
+            if (cancel_checker()) {
+                RCLCPP_WARN(node_->get_logger(), "Plan was canceled");
+                return global_path;
+            }
+            geometry_msgs::msg::PoseStamped pose;
+            pose.header.stamp = node_->now();
+            pose.header.frame_id = global_frame_;
+            pose.pose.position.x = start.pose.position.x + i * x_increment;
+            pose.pose.position.y = start.pose.position.y + i * y_increment;
+            pose.pose.position.z = 0.0;
+            global_path.poses.push_back(pose);
+        }
+
+        for (geometry_msgs::msg::PoseStamped & pose : global_path.poses) {
+            if (cancel_checker()) {
+                RCLCPP_WARN(node_->get_logger(), "Plan was canceled");
+                return global_path;
+            }
+            unsigned int mx, my;
+            if (costmap_->worldToMap(pose.pose.position.x, pose.pose.position.y, mx, my)) {
+                unsigned char cost = costmap_->getCost(mx, my);
+                if (cost == nav2_costmap_2d::LETHAL_OBSTACLE) {
+                    RCLCPP_WARN(node_->get_logger(), "Path is in collision at (%f, %f)", pose.pose.position.x, pose.pose.position.y);
+                    RCLCPP_ERROR(node_->get_logger(), "Planner failed to find a path.");
+                }
+            }
+        }
+
+        geometry_msgs::msg::PoseStamped final_pose = goal;
+        final_pose.header.stamp = node_->now();
+        final_pose.header.frame_id = global_frame_;
+        global_path.poses.push_back(final_pose);
+        return global_path;
     }
 }
 

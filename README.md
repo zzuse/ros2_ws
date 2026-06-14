@@ -282,3 +282,11 @@ source install/setup.bash
    ros2 interface show geometry_msgs/msg/PoseStamped # 位置
    ros2 interface show nav_msgs/msg/OccupancyGrid # 占据栅格
    ```
+9. ros2 nav2 custom planner
+   ```
+   # colcon build (compile nav2_custom_planner/src/nav2_custom_planner.cpp to a dynamic link library)
+   # change fishbot_navigation2/config/nav2_params.yaml to add Nav2CustomPlanner as library
+   # set 2d_pos and goal in Rviz2 to start custom plan
+   ros2 launch fishbot_description gz_control.launch.py
+   ros2 launch fishbot_navigation2 navigation2.launch.py use_sim_time:=True
+   ```
