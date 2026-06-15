@@ -66,6 +66,7 @@ ros2 pkg create autopatrol_interface --dependencies rosidl_default_generators
 ```sh
 ros2 pkg create motion_control_system --dependencies pluginlib --license Apache-2.0
 ros2 pkg create nav2_custom_planner --dependencies pluginlib nav2_core --license Apache-2.0
+ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies pluginlib nav2_core --license Apache-2.0
 ```
 
 
@@ -282,11 +283,14 @@ source install/setup.bash
    ros2 interface show geometry_msgs/msg/PoseStamped # 位置
    ros2 interface show nav_msgs/msg/OccupancyGrid # 占据栅格
    ```
-9. ros2 nav2 custom planner
+9. ros2 nav2 custom planner and controller
    ```
    # colcon build (compile nav2_custom_planner/src/nav2_custom_planner.cpp to a dynamic link library)
-   # change fishbot_navigation2/config/nav2_params.yaml to add Nav2CustomPlanner as library
-   # set 2d_pos and goal in Rviz2 to start custom plan
+   # change fishbot_navigation2/config/nav2_params.yaml planner_server section, to add Nav2CustomPlanner as library
+   # set 2D Pos Estimate and Nav2Goal in Rviz2 to start custom plan
+   # colcon build (compile nav2_custom_controller/src/custom_controller.cpp to a dynamic link library)
+   # change fishbot_navigation2/config/nav2_params.yaml controller_server->FollowPath section, to add CustomController
+   # set 2D Pos Estimate and Nav2Goal in Rviz2 to start custom controller
    ros2 launch fishbot_description gz_control.launch.py
    ros2 launch fishbot_navigation2 navigation2.launch.py use_sim_time:=True
    ```
