@@ -68,7 +68,10 @@ ros2 pkg create motion_control_system --dependencies pluginlib --license Apache-
 ros2 pkg create nav2_custom_planner --dependencies pluginlib nav2_core --license Apache-2.0
 ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies pluginlib nav2_core --license Apache-2.0
 ```
-
+### 11. `micro ros package`
+```
+# using platform io to build and run
+```
 
 ## Prerequisites
 - ROS 2 (jazzy or newer recommended)
