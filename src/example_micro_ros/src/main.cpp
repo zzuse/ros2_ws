@@ -6,6 +6,39 @@
 #include <MPU6050_light.h>
 #include <PidController.h>
 
+// 引入microros和wifi相关的库
+#include <WiFi.h>
+#include <micro_ros_platformio.h>
+#include <rcl/rcl.h>
+#include <rclc/executor.h>
+#include <rclc/rclc.h>
+
+// 声明一些相关的结构体对象
+rcl_allocator_t allocator; // 内存分配器
+rclc_support_t support;    // 存储时钟, 内存分配
+rclc_executor_t executor;  // 执行器, 用于管理订阅和计时器回调
+rcl_node_t node;
+
+// 单独创建一个task运行 micro-ros 相当于一个线程
+void microros_task(void* args)
+{
+    // 设置传输协议并等待完成
+    IPAddress agent_ip;
+    agent_ip.fromString("192.168.1.100");
+    set_microros_wifi_transports("fishros", "88888888", agent_ip, 8888);
+    delay(2000);
+    // 初始化内存分配
+    allocator = rcl_get_default_allocator();
+    // 初始化支持
+    rclc_support_init(&support, 0, NULL, &allocator);
+    // 初始化节点
+    rclc_node_init_default(&node, "fishbot_motion_control", "", &support);
+    // 初始化执行器
+    unsigned int num_handles = 0;
+    rclc_executor_init(&executor, &support.context, num_handles, &allocator);
+    rclc_executor_spin(&executor); // 循环执行
+}
+
 #define TRIG 27
 #define ECHO 21
 
@@ -63,6 +96,8 @@ void setup()
     Serial.printf("OUT:left_speed=%f, right_speed=%f\n", out_left_speed, out_right_speed);
     pid[0].update_target(out_left_speed);
     pid[1].update_target(out_right_speed);
+
+    xTaskCreate(microros_task, "microros_task", 10240, NULL, 1, NULL);
 }
 
 void readMPU6050()
