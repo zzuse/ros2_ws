@@ -70,7 +70,8 @@ ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies p
 ```
 ### 11. `micro ros package`
 ```
-# using platform io to build and run
+# For vscode platformio extension need open folder in example_micro_ros subfolder
+# using platform io to build and deploy PidController, Kinematics, Ultrasonic, LED, MPU6050(IMU)...
 ```
 
 ## Prerequisites
