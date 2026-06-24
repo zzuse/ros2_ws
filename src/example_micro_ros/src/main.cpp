@@ -8,6 +8,7 @@
 
 // 引入microros和wifi相关的库
 #include <WiFi.h>
+#include <geometry_msgs/msg/twist.h> //角速度线速度
 #include <micro_ros_platformio.h>
 #include <rcl/rcl.h>
 #include <rclc/executor.h>
@@ -18,14 +19,38 @@ rcl_allocator_t allocator; // 内存分配器
 rclc_support_t support;    // 存储时钟, 内存分配
 rclc_executor_t executor;  // 执行器, 用于管理订阅和计时器回调
 rcl_node_t node;
+rcl_subscription_t sub_cmd_vel; // 订阅者
+geometry_msgs__msg__Twist msg_cmd_vel;
+
+Esp32McpwmMotor motor;
+Esp32PcntEncoder encoders[2];
+PidController pid[2];
+Kinematics kinematics;
+// Rotate
+float target_linear_speed = 20.0; // mm/s
+float target_angular_speed = 0.1; // rad/s
+float out_left_speed = 0.0;
+float out_right_speed = 0.0;
+
+void twist_callback(const void* msg_in)
+{
+    // 将收到的消息指针转换成 geometry_msgs__msg__Twist 类型的指针
+    const geometry_msgs__msg__Twist* msg = (const geometry_msgs__msg__Twist*)msg_in;
+    target_linear_speed = msg->linear.x * 1000; // m/s to mm/s
+    target_angular_speed = msg->angular.z;
+    kinematics.kinematics_inverse(target_linear_speed, target_angular_speed, &out_left_speed, &out_right_speed);
+    Serial.printf("OUT:left_speed=%f, right_speed=%f\n", out_left_speed, out_right_speed);
+    pid[0].update_target(out_left_speed);
+    pid[1].update_target(out_right_speed);
+};
 
 // 单独创建一个task运行 micro-ros 相当于一个线程
 void microros_task(void* args)
 {
     // 设置传输协议并等待完成
     IPAddress agent_ip;
-    agent_ip.fromString("192.168.1.100");
-    set_microros_wifi_transports("fishros", "88888888", agent_ip, 8888);
+    agent_ip.fromString("192.168.64.7");
+    set_microros_wifi_transports(const_cast<char*>("fishros"), const_cast<char*>("88888888"), agent_ip, 8888);
     delay(2000);
     // 初始化内存分配
     allocator = rcl_get_default_allocator();
@@ -34,8 +59,12 @@ void microros_task(void* args)
     // 初始化节点
     rclc_node_init_default(&node, "fishbot_motion_control", "", &support);
     // 初始化执行器
-    unsigned int num_handles = 0;
+    unsigned int num_handles = 1;
     rclc_executor_init(&executor, &support.context, num_handles, &allocator);
+    // 初始化订阅者
+    rclc_subscription_init_best_effort(&sub_cmd_vel, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+                                       "/cmd_vel");
+    rclc_executor_add_subscription(&executor, &sub_cmd_vel, &msg_cmd_vel, &twist_callback, ON_NEW_DATA);
     rclc_executor_spin(&executor); // 循环执行
 }
 
@@ -43,16 +72,6 @@ void microros_task(void* args)
 #define ECHO 21
 
 MPU6050 mpu(Wire);
-Esp32McpwmMotor motor;
-Esp32PcntEncoder encoders[2];
-PidController pid[2];
-Kinematics kinematics;
-
-// Rotate
-float target_linear_speed = 20.0; // mm/s
-float target_angular_speed = 0.1; // rad/s
-float out_left_speed = 0.0;
-float out_right_speed = 0.0;
 
 unsigned long timer = 0;
 
@@ -92,10 +111,6 @@ void setup()
     // distance per tick = 3.141593*67/1976 = 0.10657556 mm
     kinematics.set_motor_param(0, 0.10657556);
     kinematics.set_motor_param(1, 0.10657556);
-    kinematics.kinematics_inverse(target_linear_speed, target_angular_speed, &out_left_speed, &out_right_speed);
-    Serial.printf("OUT:left_speed=%f, right_speed=%f\n", out_left_speed, out_right_speed);
-    pid[0].update_target(out_left_speed);
-    pid[1].update_target(out_right_speed);
 
     xTaskCreate(microros_task, "microros_task", 10240, NULL, 1, NULL);
 }
