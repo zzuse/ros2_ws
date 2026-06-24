@@ -69,9 +69,13 @@ ros2 pkg create nav2_custom_planner --dependencies pluginlib nav2_core --license
 ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies pluginlib nav2_core --license Apache-2.0
 ```
 ### 11. `micro ros package`
-```
+```sh
 # For vscode platformio extension need open folder in example_micro_ros subfolder
 # using platform io to build and deploy PidController, Kinematics, Ultrasonic, LED, MPU6050(IMU)...
+# cloned two submodule src/micro-ROS-Agent/ src/micro_ros_msgs/, I added as submodule in this project
+# git clone https://github.com/micro-ROS/micro-ROS-Agent.git -b $ROS_DISTRO
+# git clone https://github.com/micro-ROS/micro_ros_msgs.git -b $ROS_DISTRO
+git submodule update --init --recursive
 ```
 
 ## Prerequisites
@@ -297,4 +301,12 @@ source install/setup.bash
    # set 2D Pos Estimate and Nav2Goal in Rviz2 to start custom controller
    ros2 launch fishbot_description gz_control.launch.py
    ros2 launch fishbot_navigation2 navigation2.launch.py use_sim_time:=True
+   ```
+10. micro ros agent
+   ```
+   # Server cmd_vel control
+   ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard
+   ros2 topic info /cmd_vel -v
+   # Client flash the micro-ros firmware
    ```
