@@ -309,5 +309,5 @@ source install/setup.bash
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ros2 topic info /cmd_vel -v
    ros2 topic echo /odom --once
-   # Client flash the micro-ros firmware
+   # Client change the agent_ip, wifi ssid and password, then compile and flash the micro-ros firmware
    ```
