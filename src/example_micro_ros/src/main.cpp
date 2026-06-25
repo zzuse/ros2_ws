@@ -10,6 +10,8 @@
 #include <WiFi.h>
 #include <geometry_msgs/msg/twist.h> //角速度线速度
 #include <micro_ros_platformio.h>
+#include <micro_ros_utilities/string_utilities.h> //引入字符串内存分配工具
+#include <nav_msgs/msg/odometry.h>                // 里程计
 #include <rcl/rcl.h>
 #include <rclc/executor.h>
 #include <rclc/rclc.h>
@@ -22,6 +24,10 @@ rcl_node_t node;
 rcl_subscription_t sub_cmd_vel; // 订阅者
 geometry_msgs__msg__Twist msg_cmd_vel;
 
+rcl_publisher_t pub_odom;
+nav_msgs__msg__Odometry msg_odom;
+rcl_timer_t timer;
+
 Esp32McpwmMotor motor;
 Esp32PcntEncoder encoders[2];
 PidController pid[2];
@@ -31,6 +37,27 @@ float target_linear_speed = 20.0; // mm/s
 float target_angular_speed = 0.1; // rad/s
 float out_left_speed = 0.0;
 float out_right_speed = 0.0;
+
+void timer_callback(rcl_timer_t* timer, int64_t last_call_time)
+{
+    // 里程计设置
+    odom_t odom = kinematics.get_odom();
+    int64_t stamp = rmw_uros_epoch_millis();
+    msg_odom.header.stamp.sec = static_cast<int32_t>(stamp / 1000);             // 秒部分
+    msg_odom.header.stamp.nanosec = static_cast<int32_t>((stamp % 1000) * 1e6); // 纳秒部分
+    msg_odom.pose.pose.position.x = odom.x;
+    msg_odom.pose.pose.position.y = odom.y;
+    msg_odom.pose.pose.orientation.w = cos(odom.angle * 0.5);
+    msg_odom.pose.pose.orientation.x = 0;
+    msg_odom.pose.pose.orientation.y = 0;
+    msg_odom.pose.pose.orientation.z = sin(odom.angle * 0.5);
+    msg_odom.twist.twist.linear.x = odom.linear_speed;
+    msg_odom.twist.twist.angular.z = odom.angular_speed;
+    // 里程计发布
+    if (rcl_publish(&pub_odom, &msg_odom, NULL) != RCL_RET_OK) {
+        Serial.println("error; odom pub failed!");
+    }
+}
 
 void twist_callback(const void* msg_in)
 {
@@ -49,7 +76,7 @@ void microros_task(void* args)
 {
     // 设置传输协议并等待完成
     IPAddress agent_ip;
-    agent_ip.fromString("192.168.64.7");
+    agent_ip.fromString("10.0.0.34");
     set_microros_wifi_transports(const_cast<char*>("fishros"), const_cast<char*>("88888888"), agent_ip, 8888);
     delay(2000);
     // 初始化内存分配
@@ -59,12 +86,24 @@ void microros_task(void* args)
     // 初始化节点
     rclc_node_init_default(&node, "fishbot_motion_control", "", &support);
     // 初始化执行器
-    unsigned int num_handles = 1;
+    unsigned int num_handles = 2;
     rclc_executor_init(&executor, &support.context, num_handles, &allocator);
     // 初始化订阅者
     rclc_subscription_init_best_effort(&sub_cmd_vel, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
                                        "/cmd_vel");
     rclc_executor_add_subscription(&executor, &sub_cmd_vel, &msg_cmd_vel, &twist_callback, ON_NEW_DATA);
+    // 初始化msg
+    msg_odom.header.frame_id = micro_ros_string_utilities_set(msg_odom.header.frame_id, "odom");
+    msg_odom.child_frame_id = micro_ros_string_utilities_set(msg_odom.header.frame_id, "base_footprint");
+    // 初始化发布者
+    rclc_publisher_init_best_effort(&pub_odom, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "/odom");
+    rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(50), timer_callback);
+    rclc_executor_add_timer(&executor, &timer);
+    // 初始化时间同步
+    while (!rmw_uros_epoch_synchronized()) {
+        rmw_uros_sync_session(1000);
+        delay(10);
+    }
     rclc_executor_spin(&executor); // 循环执行
 }
 
@@ -73,7 +112,7 @@ void microros_task(void* args)
 
 MPU6050 mpu(Wire);
 
-unsigned long timer = 0;
+unsigned long time_now = 0;
 
 void setup()
 {
@@ -120,7 +159,7 @@ void readMPU6050()
     // MPU IMU sensor
     mpu.update();
 
-    if (millis() - timer > 1000) { // print data every second
+    if (millis() - time_now > 1000) { // print data every second
         Serial.print(F("TEMPERATURE: "));
         Serial.println(mpu.getTemp());
         Serial.print(F("ACCELERO  X: "));
@@ -149,7 +188,7 @@ void readMPU6050()
         Serial.print("\tZ: ");
         Serial.println(mpu.getAngleZ());
         Serial.println(F("=====================================================\n"));
-        timer = millis();
+        time_now = millis();
     }
 }
 
