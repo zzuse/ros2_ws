@@ -308,5 +308,6 @@ source install/setup.bash
    ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ros2 topic info /cmd_vel -v
+   ros2 topic echo /odom --once
    # Client flash the micro-ros firmware
    ```

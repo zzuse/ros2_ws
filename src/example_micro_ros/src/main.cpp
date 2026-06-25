@@ -94,7 +94,7 @@ void microros_task(void* args)
     rclc_executor_add_subscription(&executor, &sub_cmd_vel, &msg_cmd_vel, &twist_callback, ON_NEW_DATA);
     // 初始化msg
     msg_odom.header.frame_id = micro_ros_string_utilities_set(msg_odom.header.frame_id, "odom");
-    msg_odom.child_frame_id = micro_ros_string_utilities_set(msg_odom.header.frame_id, "base_footprint");
+    msg_odom.child_frame_id = micro_ros_string_utilities_set(msg_odom.child_frame_id, "base_footprint");
     // 初始化发布者
     rclc_publisher_init_best_effort(&pub_odom, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "/odom");
     rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(50), timer_callback);

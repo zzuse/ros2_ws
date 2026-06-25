@@ -66,7 +66,7 @@ void Kinematics::update_odom(uint16_t dt_ms)
     this->kinematics_forward(motor_params[0].motor_speed, motor_params[1].motor_speed, &odom.linear_speed,
                              &odom.angular_speed);
     // 计算里程计信息
-    odom.linear_speed = odom.linear_speed;
+    odom.linear_speed = odom.linear_speed / 1000; // ms/s to m/s, in simulation system rviz can see
     odom.angle += odom.angular_speed * dt_s;
     TransAngleInPi(odom.angle, odom.angle);
     // 线速度分解到X轴Y轴
