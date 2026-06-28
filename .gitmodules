@@ -6,3 +6,10 @@
 	path = src/micro_ros_msgs
 	url = https://github.com/micro-ROS/micro_ros_msgs.git
 	branch = jazzy
+[submodule "src/ros_serial2wifi"]
+	path = src/ros_serial2wifi
+	url = https://github.com/fishros/ros_serial2wifi
+[submodule "src/ydlidar_ros2"]
+	path = src/ydlidar_ros2
+	url = https://github.com/zzuse/ydlidar_ros2.git
+	branch = fishbot

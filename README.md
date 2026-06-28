@@ -71,10 +71,14 @@ ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies p
 ### 11. `micro ros package`
 ```sh
 # For vscode platformio extension need open folder in example_micro_ros subfolder
-# using platform io to build and deploy PidController, Kinematics, Ultrasonic, LED, MPU6050(IMU)...
-# cloned two submodule src/micro-ROS-Agent/ src/micro_ros_msgs/, I added as submodule in this project
+# Using https://github.com/fishros/fishbot_tool.git project to flash firmware of Lidar an Control Board
+# Using platform io to customize and build and deploy PidController, Kinematics, Ultrasonic, LED, MPU6050(IMU)...
+# Submodule src/micro-ROS-Agent/ src/micro_ros_msgs/ in this project, and open port 8888
 # git clone https://github.com/micro-ROS/micro-ROS-Agent.git -b $ROS_DISTRO
 # git clone https://github.com/micro-ROS/micro_ros_msgs.git -b $ROS_DISTRO
+# Submodule lidar wifi2serial tcp server and lidar data driver, and open port 8889
+# git clone https://github.com/fishros/ros_serial2wifi
+# git clone https://github.com/fishros/ydlidar_ros2.git -b fishbot
 git submodule update --init --recursive
 ```
 
@@ -310,4 +314,7 @@ source install/setup.bash
    ros2 topic info /cmd_vel -v
    ros2 topic echo /odom --once
    # Client change the agent_ip, wifi ssid and password, then compile and flash the micro-ros firmware
+   # After Lidar firmware flash, then need wifi to serial and start lidar driver scan
+   ros2 run ros_serial2wifi tcp_server --ros-args -p serial_port:=/tmp/tty_laser
+   ros2 launch ydlidar ydlidar_launch.py
    ```
