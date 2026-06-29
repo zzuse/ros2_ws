@@ -80,6 +80,8 @@ ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies p
 # git clone https://github.com/fishros/ros_serial2wifi
 # git clone https://github.com/fishros/ydlidar_ros2.git -b fishbot
 git submodule update --init --recursive
+ros2 pkg create fishcar_description --license Apache-2.0
+ros2 pkg create fishcar_bringup --license Apache-2.0
 ```
 
 ## Prerequisites
@@ -317,4 +319,15 @@ source install/setup.bash
    # After Lidar firmware flash, then need wifi to serial and start lidar driver scan
    ros2 run ros_serial2wifi tcp_server --ros-args -p serial_port:=/tmp/tty_laser
    ros2 launch ydlidar ydlidar_launch.py
+   # URDF and Odom publish
+   ros2 launch fishcar_bringup urdf2tf.launch.py
+   ros2 run fishcar_bringup odom2tf
+   # ALL ABOVE CAN BE START by src/fishcar_bringup/launch/bringup.launch.py
+   ros2 launch fishcar_bringup bringup.launch.py
+   # SLAM
+   ## ros2 launch slam_toolbox online_async_launch.py use_sim_time:=False
+   ## https://gitee.com/haha-hua/fishros_chapter9_code/blob/master/README.md problem fix
+   ros2 launch slam_toolbox online_async_launch.py slam_params_file:=src/fishcar_bringup/config/slam_toolbox.yaml use_sim_time:=False
+   # MAP inside src/fishcar_bringup/map
+   ros2 run nav2_map_server map_saver_cli -f room
    ```
