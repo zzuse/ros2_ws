@@ -24,7 +24,8 @@ private:
     void odom_callback_(const nav_msgs::msg::Odometry::SharedPtr msg)
     {
         geometry_msgs::msg::TransformStamped transform;
-        transform.header = msg->header; // 使用消息的时间戳和框架ID
+        transform.header = msg->header;                                                       // 使用消息的时间戳和框架ID
+        transform.header.stamp = this->get_clock()->now() + rclcpp::Duration(0.2, 100000000); // 添加0.2秒的延迟
         transform.child_frame_id = msg->child_frame_id;
         transform.transform.translation.x = msg->pose.pose.position.x;
         transform.transform.translation.y = msg->pose.pose.position.y;
