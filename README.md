@@ -82,6 +82,7 @@ ros2 pkg create nav2_custom_controller --build-type ament_cmake --dependencies p
 git submodule update --init --recursive
 ros2 pkg create fishcar_description --license Apache-2.0
 ros2 pkg create fishcar_bringup --license Apache-2.0
+ros2 pkg create fishcar_navigation2 --license Apache-2.0
 ```
 
 ## Prerequisites
@@ -330,4 +331,7 @@ source install/setup.bash
    ros2 launch slam_toolbox online_async_launch.py slam_params_file:=src/fishcar_bringup/config/slam_toolbox.yaml use_sim_time:=False
    # MAP inside src/fishcar_bringup/map
    ros2 run nav2_map_server map_saver_cli -f room
+   # NAV2
+   cp /opt/ros/jazzy/share/nav2_bringup/params/nav2_params.yaml config/.
+   ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
    ```

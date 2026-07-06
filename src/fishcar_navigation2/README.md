@@ -1,0 +1,1 @@
+ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
