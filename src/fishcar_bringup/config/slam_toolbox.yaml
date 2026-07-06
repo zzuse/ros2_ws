@@ -2,22 +2,18 @@ slam_toolbox:
   ros__parameters:
     # 1. 解决 QoS 不匹配，确保能收到雷达数据
     scan_qos_reliability: "best_effort"
-    
+
     # 2. 提高地图更新频率，避免 Rviz2 看起来像卡死
     map_update_interval: 0.5
-    
+
     # 3. 增加 TF 容忍度
     transform_timeout: 0.5
     tf_buffer_duration: 30.0
-    
-    # 4. 【关键】拯救烂里程计的“宽容参数”
-    # 降低匹配最低得分要求（默认 0.5 -> 0.1），哪怕拼得不准也先拼上
-    link_match_minimum_response_fine: 0.1  
-    
-    # 扩大搜索范围，允许里程计有较大误差
-    search_window_size: 40
-    correlation_search_space_dimension: 0.5
-    
-    # 只要动一点点就尝试更新
-    minimum_travel_distance: 0.1
-    minimum_travel_heading: 0.1
+
+    # 4. 匹配质量：odom TF 时间戳修复后，恢复接近默认的严格匹配，
+    #    避免低质量匹配进入位姿图导致地图旋转错位
+    link_match_minimum_response_fine: 0.45
+
+    # 每移动 0.3m / 转动 0.3rad 更新一次（接近默认值，减少噪声累积）
+    minimum_travel_distance: 0.3
+    minimum_travel_heading: 0.3

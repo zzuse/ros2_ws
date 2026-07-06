@@ -334,4 +334,5 @@ source install/setup.bash
    # NAV2
    cp /opt/ros/jazzy/share/nav2_bringup/params/nav2_params.yaml config/.
    ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
+   # Using rqt->Plugins->Dynamic Reconfiguration->Global/Local Costmap can adjust the map display.
    ```
