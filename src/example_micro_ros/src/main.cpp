@@ -38,7 +38,7 @@ float target_angular_speed = 0.1; // rad/s
 float out_left_speed = 0.0;
 float out_right_speed = 0.0;
 
-void timer_callback(rcl_timer_t* timer, int64_t last_call_time)
+void timer_callback(rcl_timer_t *timer, int64_t last_call_time)
 {
     // 里程计设置
     odom_t odom = kinematics.get_odom();
@@ -54,15 +54,16 @@ void timer_callback(rcl_timer_t* timer, int64_t last_call_time)
     msg_odom.twist.twist.linear.x = odom.linear_speed;
     msg_odom.twist.twist.angular.z = odom.angular_speed;
     // 里程计发布
-    if (rcl_publish(&pub_odom, &msg_odom, NULL) != RCL_RET_OK) {
+    if (rcl_publish(&pub_odom, &msg_odom, NULL) != RCL_RET_OK)
+    {
         Serial.println("error; odom pub failed!");
     }
 }
 
-void twist_callback(const void* msg_in)
+void twist_callback(const void *msg_in)
 {
     // 将收到的消息指针转换成 geometry_msgs__msg__Twist 类型的指针
-    const geometry_msgs__msg__Twist* msg = (const geometry_msgs__msg__Twist*)msg_in;
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msg_in;
     target_linear_speed = msg->linear.x * 1000; // m/s to mm/s
     target_angular_speed = msg->angular.z;
     kinematics.kinematics_inverse(target_linear_speed, target_angular_speed, &out_left_speed, &out_right_speed);
@@ -72,12 +73,12 @@ void twist_callback(const void* msg_in)
 };
 
 // 单独创建一个task运行 micro-ros 相当于一个线程
-void microros_task(void* args)
+void microros_task(void *args)
 {
     // 设置传输协议并等待完成
     IPAddress agent_ip;
     agent_ip.fromString("10.0.0.34");
-    set_microros_wifi_transports(const_cast<char*>("fishros"), const_cast<char*>("88888888"), agent_ip, 8888);
+    set_microros_wifi_transports(const_cast<char *>("fishros"), const_cast<char *>("88888888"), agent_ip, 8888);
     delay(2000);
     // 初始化内存分配
     allocator = rcl_get_default_allocator();
@@ -100,7 +101,8 @@ void microros_task(void* args)
     rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(50), timer_callback);
     rclc_executor_add_timer(&executor, &timer);
     // 初始化时间同步
-    while (!rmw_uros_epoch_synchronized()) {
+    while (!rmw_uros_epoch_synchronized())
+    {
         rmw_uros_sync_session(1000);
         delay(10);
     }
@@ -125,7 +127,8 @@ void setup()
     byte status = mpu.begin();
     Serial.print(F("MPU6050 status: "));
     Serial.println(status);
-    while (status != 0) {
+    while (status != 0)
+    {
     } // stop everything if could not connect to MPU6050
 
     Serial.println(F("Calculating offsets, do not move MPU6050"));
@@ -144,7 +147,21 @@ void setup()
     pid[0].out_limit(-100, 100);
     pid[1].out_limit(-100, 100);
     // 初始化运动学参数
-    kinematics.set_wheel_distance(175); // mm
+    /* calibrated: rotation test under-reported
+        // Your two measurements together answer it: wheel_distance is too large. Both directions came up short of a full turn:
+        // - CW turn: yaw ended +14.26° — sweeping clockwise (negative) it only accumulated ~345.7° of the 360°.
+        // - CCW turn: yaw ended −16.03° — sweeping counter-clockwise (positive) it only accumulated ~344.0°.
+        // The intuition: firmware computes yaw as (right wheel travel − left wheel travel) ÷ wheel_distance.
+        // If the wheel_distance it divides by is bigger than the real track, every rotation comes out too small — exactly your symptom,
+        // symmetric in both directions (which also confirms it's geometry, not an encoder problem).
+        // The correction: average under-report factor = (345.74/360 + 343.97/360) / 2 ≈ 0.958, so:
+        // new wheel_distance = 175 × 0.958 ≈ 167.6 mm
+        //
+        // Round 2 with 167.6: still under-reported, CW short 0.051 rad (2.9°), CCW short 0.095 rad (5.4°).
+        // Average residual = (0.051 + 0.095)/2 = 0.073 rad/turn → factor (2π − 0.073)/2π ≈ 0.9884
+        // new wheel_distance = 167.6 × 0.9884 ≈ 165.7 mm (expect ~±1.3° per turn residual after this)
+    */
+    kinematics.set_wheel_distance(165.7); // mm
     // where 10 laps ticks 19766
     // 67mm is the wheel diameter
     // distance per tick = 3.141593*67/1976 = 0.10657556 mm
@@ -159,7 +176,8 @@ void readMPU6050()
     // MPU IMU sensor
     mpu.update();
 
-    if (millis() - time_now > 1000) { // print data every second
+    if (millis() - time_now > 1000)
+    { // print data every second
         Serial.print(F("TEMPERATURE: "));
         Serial.println(mpu.getTemp());
         Serial.print(F("ACCELERO  X: "));

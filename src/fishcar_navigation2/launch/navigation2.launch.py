@@ -11,7 +11,8 @@ def generate_launch_description():
     pkg_nav2_bringup = get_package_share_directory('nav2_bringup')
     rviz2_config_path = os.path.join(pkg_nav2_bringup, 'rviz', 'nav2_default_view.rviz')
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    # real robot: sim time must be off (true would freeze ROS time waiting for /clock)
+    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_yaml_file = LaunchConfiguration('map', default=os.path.join(pkg_fishbot_nav2, 'maps', 'room.yaml'))
     nav2_params_file = LaunchConfiguration('params_file', default=os.path.join(pkg_fishbot_nav2, 'config', 'nav2_params.yaml'))
     # Create a launch description
