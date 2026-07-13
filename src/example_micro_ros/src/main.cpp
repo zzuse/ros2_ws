@@ -176,6 +176,12 @@ void setup()
     kinematics.set_motor_param(0, mm_per_tick);
     kinematics.set_motor_param(1, mm_per_tick);
     Serial.printf("BOOT: wheel_distance=%.1f mm, mm_per_tick=%.8f\n", wheel_distance_mm, mm_per_tick);
+    // Probe the compiled Kinematics lib through the same code path update_odom uses for yaw:
+    // ang = (right - left) / track  =>  track = 200 / ang. Must print the same value as above;
+    // if it differs, the flashed build compiled a different lib/Kinematics than this repo's.
+    float probe_lin = 0.0, probe_ang = 0.0;
+    kinematics.kinematics_forward(-100.0, 100.0, &probe_lin, &probe_ang);
+    Serial.printf("BOOT: yaw-path effective track=%.1f mm\n", 200.0 / probe_ang);
 
     xTaskCreate(microros_task, "microros_task", 10240, NULL, 1, NULL);
 }
