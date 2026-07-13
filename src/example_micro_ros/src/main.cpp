@@ -160,13 +160,22 @@ void setup()
         // Round 2 with 167.6: still under-reported, CW short 0.051 rad (2.9°), CCW short 0.095 rad (5.4°).
         // Average residual = (0.051 + 0.095)/2 = 0.073 rad/turn → factor (2π − 0.073)/2π ≈ 0.9884
         // new wheel_distance = 167.6 × 0.9884 ≈ 165.7 mm (expect ~±1.3° per turn residual after this)
+        //
+        // Round 3 (2026-07-13) with 165.7: smear test showed ~10°/turn; tf2_echo now OVER-reports:
+        // CCW +0.1007 / +0.057 rad (mean +0.079), CW −0.148 / −0.149 rad (mean −0.1485).
+        // Average over-report = 0.1137 rad/turn → factor (2π + 0.1137)/2π ≈ 1.0181
+        // new wheel_distance = 165.7 × 1.0181 ≈ 168.7 mm. Expect ~±2°/turn residual, equal and
+        // opposite CW/CCW — that part is mechanical (tire mismatch / encoder loss), not this param.
     */
-    kinematics.set_wheel_distance(165.7); // mm
+    const float wheel_distance_mm = 168.7;
+    kinematics.set_wheel_distance(wheel_distance_mm);
     // where 10 laps ticks 19766
     // 67mm is the wheel diameter
     // distance per tick = 3.141593*67/1976 = 0.10657556 mm
-    kinematics.set_motor_param(0, 0.10657556);
-    kinematics.set_motor_param(1, 0.10657556);
+    const float mm_per_tick = 0.10657556;
+    kinematics.set_motor_param(0, mm_per_tick);
+    kinematics.set_motor_param(1, mm_per_tick);
+    Serial.printf("BOOT: wheel_distance=%.1f mm, mm_per_tick=%.8f\n", wheel_distance_mm, mm_per_tick);
 
     xTaskCreate(microros_task, "microros_task", 10240, NULL, 1, NULL);
 }
