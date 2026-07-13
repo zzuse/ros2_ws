@@ -313,7 +313,6 @@ source install/setup.bash
    ```
    # Server cmd_vel control
    ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
-   ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ros2 topic info /cmd_vel -v
    ros2 topic echo /odom --once
    # Client change the agent_ip, wifi ssid and password, then compile and flash the micro-ros firmware
@@ -325,6 +324,7 @@ source install/setup.bash
    ros2 run fishcar_bringup odom2tf
    # ALL ABOVE CAN BE START by src/fishcar_bringup/launch/bringup.launch.py
    ros2 launch fishcar_bringup bringup.launch.py
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard
    # SLAM
    ## ros2 launch slam_toolbox online_async_launch.py use_sim_time:=False
    ## https://gitee.com/haha-hua/fishros_chapter9_code/blob/master/README.md problem fix
