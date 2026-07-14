@@ -167,9 +167,11 @@ void setup()
         // new wheel_distance = 165.7 × 1.0181 ≈ 168.7 mm. Expect ~±2°/turn residual, equal and
         // opposite CW/CCW — that part is mechanical (tire mismatch / encoder loss), not this param.
         //
-        // NOTE: rounds at "169"/"168.7" before 2026-07-13 evening were invalid — the Mac build
-        // used a stale lib/Kinematics (effective track ≈ 167.5). The "yaw-path effective track"
-        // BOOT line below now proves what the compiled lib actually uses.
+        // NOTE: rounds at "169"/"168.7" before 2026-07-13 evening were invalid — the flashed
+        // binary kept an effective track ≈ 167.5 (stale PlatformIO build artifact, e.g. cached
+        // libKinematics.a / main.cpp.o). If a value change doesn't show in behavior, run
+        // `pio run -t clean` and check the "yaw-path effective track" BOOT line below —
+        // it proves what the compiled lib actually uses.
         //
         // Round 4 with verified 168.7: CCW +0.0159 rad (+0.9°), CW −0.0793 rad (−4.5°),
         // mean over-report 0.0476 rad/turn → factor (2π + 0.0476)/2π ≈ 1.00758

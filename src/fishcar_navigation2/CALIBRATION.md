@@ -54,6 +54,55 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
 Fix these in the ESP32 firmware, re-flash, and re-run both tests until they pass.
 
+### 1c. Verify what firmware is actually running (do not skip)
+
+The firmware is built and flashed from the **macOS machine**; this Linux server only
+holds the repo. Several 2026-07 calibration rounds were invalidated because the flashed
+binary didn't contain the edited value — residuals didn't move no matter what
+wheel_distance was "flashed". Suspected cause: **stale PlatformIO build artifacts**
+(e.g. `.pio/build/fishbot/lib*/libKinematics.a` or a cached `main.cpp.o` linked without
+recompiling the changed source). Two habits prevent it:
+
+- Sync the **entire** `example_micro_ros/` folder (git pull on the Mac), never just
+  `main.cpp`.
+- When a changed value doesn't show up in behavior, do a clean build:
+  `pio run -t clean && pio run -t upload` (or delete `.pio/build/`).
+
+After every flash, open the serial monitor and press the EN (reset) button:
+
+```bash
+pio device monitor -b 115200   # baud matters: platformio.ini sets no monitor_speed
+```
+
+Both BOOT lines must show the intended value **and agree with each other**:
+
+```
+BOOT: wheel_distance=170.0 mm, mm_per_tick=0.10657556
+BOOT: yaw-path effective track=170.0 mm
+```
+
+The second line is computed through the compiled library's own `kinematics_forward`
+(the exact code path that integrates yaw), so it catches a stale lib that the first
+line cannot. If they disagree, the build compiled a different `lib/Kinematics` than
+the repo's. Never trust a rotation measurement taken before both lines were verified.
+
+### 1d. Calibration history (test 1b residual per full turn; + = over-report)
+
+| Date | wheel_distance | CCW | CW | Note |
+|---|---|---|---|---|
+| 2026-07-06 | 165.7 | −2.1° | +0.02° | passed, regressed within a week |
+| 2026-07-13 | 165.7 | +3.3…+5.8° | +8.5° | smear test showed ~10°/turn map rotation |
+| 2026-07-13 | "169" / "168.7" | unchanged | unchanged | **INVALID** — stale build artifact; effective track stuck ≈167.5 |
+| 2026-07-13 | 168.7 (verified) | +0.9° | +4.5° | first valid round after clean rebuild + BOOT probes |
+| 2026-07-13 | **170.0 (final)** | −1.2° | +1.9° | done — see stopping rule below |
+
+Stopping rule: when residuals are roughly **equal and opposite** (here ±2°/turn),
+that is the mechanical asymmetry floor — left/right tire diameter mismatch or encoder
+loss — and no wheel_distance value can reduce it. Stop iterating. Only chase it
+(swap tires left↔right: asymmetry flips → tire; stays → encoder/motor side) if the
+rebuilt map still shows rotation artifacts. A ~1 cm lateral drift per 3 spin turns
+is the same asymmetry and is normal — ignore it.
+
 ## 2. Timestamp / clock-sync check
 
 The ESP32 (micro-ROS) clock must agree with the host, and no node may stamp TF in the future.
@@ -134,13 +183,47 @@ ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
   paths keep a cost "valley" away from walls, and/or lower `cost_scaling_factor`.
 - If odometry remains mediocre, raise AMCL `alpha1`–`alpha4` (e.g. 0.2 → 0.3) so the
   particle filter trusts the laser more than the wheels.
+- Narrow-passage tuning that fixed the 70 cm junction hesitation (2026-07-13):
+  `inflation_radius: 0.35` + `cost_scaling_factor: 2.5` on **both** costmaps, so the
+  inflation from opposite walls overlaps into a cost valley down the corridor center.
+  A thin inflation (0.18) makes the costmap binary: paths hug walls, the planner clips
+  junction corners, and MPPI's CostCritic fights PathAlignCritic — that conflict *is*
+  the hesitation.
+
+## 7. Diagnosing "Aborted" navigation goals
+
+RViz only shows the verdict; the reason is the first ERROR before the abort in the
+Nav2 terminal or `~/.ros/log/component_container_isolated_*.log`. Signatures seen on
+this robot:
+
+- **`Failed to make progress`** — progress checker tripped while the robot crept.
+  Usually a symptom of the two items below, not a cause. Config now allows 0.3 m
+  per 20 s.
+- **`Control loop missed its desired rate of X Hz`** — CPU starvation. This server
+  has 4 cores and software-rendered RViz eats ~2 of them. Check
+  `ps aux --sort=-%cpu`. Mitigations in place: MPPI `batch_size: 1000`,
+  `controller_frequency: 10`, `visualize: false`, `publish_voxel_map: False`.
+  Close or trim RViz (Frame Rate 10, few displays) during real runs. Check this
+  BEFORE tuning any critic weights — a starved controller looks like bad tuning.
+- **`Lookup would require extrapolation into the future (map→odom)`** plus
+  `collision_monitor: timestamps differ` — the WiFi lidar stalled >1 s, AMCL's
+  transform expired, and the collision monitor halts the robot. AMCL
+  `transform_tolerance: 0.5` rides out short stalls; repeated hits mean fix the
+  WiFi link, not the config.
+- **Costmaps missing in RViz after a param change** — the whole bringup ABORTED:
+  look for `Failed to change state for node` at startup; everything after that node
+  never activated. Known trap: MPPI requires controller period = `model_dt`
+  (at `controller_frequency: 10` use `model_dt: 0.1`; scale `time_steps` to keep the
+  ~2.8 s horizon, e.g. 28).
 
 ## Quick regression checklist
 
 | Check | Command | Pass criterion |
 |---|---|---|
+| Firmware verified | `pio device monitor -b 115200` + EN | both BOOT lines = intended value |
 | Straight 1 m | teleop + `/odom` | error < 2 % |
-| Rotate 360° | teleop + `tf2_echo odom base_footprint` | error < 3° |
+| Rotate 360° | teleop + `tf2_echo odom base_footprint` | error < 3°, equal-and-opposite CW/CCW |
+| Control loop | Nav2 log | no `missed its desired rate` lines |
 | Odom delay | `ros2 topic delay /odom` | small positive, never negative |
 | Scan delay | `ros2 topic delay /scan` | ~100 ms (≈1 sweep), ~9.8 Hz steady |
 | TF tree | `view_frames` | single tree, current stamps |
