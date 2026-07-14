@@ -194,7 +194,7 @@ ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
 
 RViz only shows the verdict; the reason is the first ERROR before the abort in the
 Nav2 terminal or `~/.ros/log/component_container_isolated_*.log`. Signatures seen on
-this robot:
+this robot: (grep -n -E "ERROR|WARN|error|failed|Failed|abort|Abort|exceeded|collision|No valid|progress")
 
 - **`Failed to make progress`** — progress checker tripped while the robot crept.
   Usually a symptom of the two items below, not a cause. Config now allows 0.3 m

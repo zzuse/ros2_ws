@@ -54,8 +54,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time)
     msg_odom.twist.twist.linear.x = odom.linear_speed;
     msg_odom.twist.twist.angular.z = odom.angular_speed;
     // 里程计发布
-    if (rcl_publish(&pub_odom, &msg_odom, NULL) != RCL_RET_OK)
-    {
+    if (rcl_publish(&pub_odom, &msg_odom, NULL) != RCL_RET_OK) {
         Serial.println("error; odom pub failed!");
     }
 }
@@ -77,8 +76,9 @@ void microros_task(void *args)
 {
     // 设置传输协议并等待完成
     IPAddress agent_ip;
-    agent_ip.fromString("10.0.0.34");
-    set_microros_wifi_transports(const_cast<char *>("fishros"), const_cast<char *>("88888888"), agent_ip, 8888);
+    agent_ip.fromString(AGENT_IP);
+    set_microros_wifi_transports(const_cast<char *>(WIFI_SSID), const_cast<char *>(WIFI_PASSWORD), agent_ip,
+                                 static_cast<uint16_t>(atoi(AGENT_PORT)));
     delay(2000);
     // 初始化内存分配
     allocator = rcl_get_default_allocator();
@@ -101,8 +101,7 @@ void microros_task(void *args)
     rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(50), timer_callback);
     rclc_executor_add_timer(&executor, &timer);
     // 初始化时间同步
-    while (!rmw_uros_epoch_synchronized())
-    {
+    while (!rmw_uros_epoch_synchronized()) {
         rmw_uros_sync_session(1000);
         delay(10);
     }
@@ -127,8 +126,7 @@ void setup()
     byte status = mpu.begin();
     Serial.print(F("MPU6050 status: "));
     Serial.println(status);
-    while (status != 0)
-    {
+    while (status != 0) {
     } // stop everything if could not connect to MPU6050
 
     Serial.println(F("Calculating offsets, do not move MPU6050"));
@@ -148,11 +146,13 @@ void setup()
     pid[1].out_limit(-100, 100);
     // 初始化运动学参数
     /* calibrated: rotation test under-reported
-        // Your two measurements together answer it: wheel_distance is too large. Both directions came up short of a full turn:
+        // Your two measurements together answer it: wheel_distance is too large. Both directions came up short of a
+       full turn:
         // - CW turn: yaw ended +14.26° — sweeping clockwise (negative) it only accumulated ~345.7° of the 360°.
         // - CCW turn: yaw ended −16.03° — sweeping counter-clockwise (positive) it only accumulated ~344.0°.
         // The intuition: firmware computes yaw as (right wheel travel − left wheel travel) ÷ wheel_distance.
-        // If the wheel_distance it divides by is bigger than the real track, every rotation comes out too small — exactly your symptom,
+        // If the wheel_distance it divides by is bigger than the real track, every rotation comes out too small —
+       exactly your symptom,
         // symmetric in both directions (which also confirms it's geometry, not an encoder problem).
         // The correction: average under-report factor = (345.74/360 + 343.97/360) / 2 ≈ 0.958, so:
         // new wheel_distance = 175 × 0.958 ≈ 167.6 mm
@@ -202,8 +202,7 @@ void readMPU6050()
     // MPU IMU sensor
     mpu.update();
 
-    if (millis() - time_now > 1000)
-    { // print data every second
+    if (millis() - time_now > 1000) { // print data every second
         Serial.print(F("TEMPERATURE: "));
         Serial.println(mpu.getTemp());
         Serial.print(F("ACCELERO  X: "));
