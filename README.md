@@ -83,6 +83,7 @@ git submodule update --init --recursive
 ros2 pkg create fishcar_description --license Apache-2.0
 ros2 pkg create fishcar_bringup --license Apache-2.0
 ros2 pkg create fishcar_navigation2 --license Apache-2.0
+ros2 pkg create fishcar_autopatrol --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
 ```
 
 ## Prerequisites
@@ -335,4 +336,7 @@ source install/setup.bash
    cp /opt/ros/jazzy/share/nav2_bringup/params/nav2_params.yaml config/.
    ros2 launch fishcar_navigation2 navigation2.launch.py use_sim_time:=False
    # Using rqt->Plugins->Dynamic Reconfiguration->Global/Local Costmap can adjust the map display.
+   # Auto Patrol
+   # ros2 topic echo /initialpose | Using (Rviz2 Publish Point tool) ros2 topic echo /clicked_point
+   ros2 run fishcar_autopatrol patrol_node --ros-args --params-file src/fishcar_autopatrol/config/patrol_config.yaml
    ```

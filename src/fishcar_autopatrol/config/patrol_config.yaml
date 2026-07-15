@@ -1,0 +1,13 @@
+/patrol_node:
+  ros__parameters:
+    initial_pose: [0.0, 0.0, 0.0]
+    start_type_description_service: true
+    use_sim_time: false
+    waypoints: [
+      0.0, 0.0, 0.0, 
+      2.146, -2.95, 1.57,
+      2.9, -7.0, 1.57,
+      -0.21, -3.67, 0.0,
+      2.107, -3.28, -1.57,
+      0.0, 0.0, 0.0,
+    ]
