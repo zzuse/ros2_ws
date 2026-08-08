@@ -317,7 +317,7 @@ source install/setup.bash
    ros2 topic info /cmd_vel -v
    ros2 topic echo /odom --once
    # Client change the agent_ip, wifi ssid and password, then compile and flash the micro-ros firmware
-   # After Lidar firmware flash, then need wifi to serial and start lidar driver scan
+   # After Lidar firmware flash, then need wifi to serial and start lidar driver scan, the name is misleading, actually wifi to serial
    ros2 run ros_serial2wifi tcp_server --ros-args -p serial_port:=/tmp/tty_laser
    ros2 launch ydlidar ydlidar_launch.py
    # URDF and Odom publish
