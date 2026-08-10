@@ -285,7 +285,7 @@ planner_server:
       # tolerance: 0.5
       # use_astar: false
       # allow_unknown: true
-      plugin: "nav2_custom_planner::Nav2CustomPlanner"
+      plugin: "nav2_astar_planner::Nav2AstarPlanner"
       interpolation_resolution: 0.1
 
 smoother_server:

@@ -5,7 +5,8 @@ This workspace contains various ROS 2 packages demonstrating Service-Client comm
 ## Packages
 
 ### 1. `chapt4_interfaces`
-Contains custom service definitions used across the workspace.
+NOTE: must compile this first for dependency error. `colcon build --packages-select chapt4_interfaces`
+Contains custom service definitions used across the workspace. 
 - **`Patrol.srv`**: Service for sending a target (x, y) coordinate to a turtle.
 - **`FaceDetector.srv`**: Service for face detection, taking an image as input and returning detection counts and bounding boxes.
 ```sh
@@ -84,6 +85,12 @@ ros2 pkg create fishcar_description --license Apache-2.0
 ros2 pkg create fishcar_bringup --license Apache-2.0
 ros2 pkg create fishcar_navigation2 --license Apache-2.0
 ros2 pkg create fishcar_autopatrol --build-type ament_python --dependencies rclpy nav2_simple_commander --license Apache-2.0
+```
+### 12. `custom nav2 planner plugin`
+```sh
+ros2 pkg create nav2_astar_planner --dependencies pluginlib nav2_core --license Apache-2.0
+# checking error
+grep -n -E "ERROR|WARN|error|failed|Failed|abort|Abort|exceeded|collision|No valid|progress" ~/.ros/log/component_container_isolated_*.log
 ```
 
 ## Prerequisites
