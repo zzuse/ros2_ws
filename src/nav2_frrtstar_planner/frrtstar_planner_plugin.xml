@@ -1,0 +1,7 @@
+<library path="nav2_frrtstar_planner_plugin">
+  <class type="nav2_frrtstar_planner::Nav2FRRTstarPlanner" base_class_type="nav2_core::GlobalPlanner">
+    <description>
+      A FRRTstar global planner plugin for Nav2.
+    </description>
+  </class>
+</library>
