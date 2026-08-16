@@ -89,8 +89,9 @@ ros2 pkg create fishcar_autopatrol --build-type ament_python --dependencies rclp
 ### 12. `custom nav2 planner plugin`
 ```sh
 ros2 pkg create nav2_astar_planner --dependencies pluginlib nav2_core --license Apache-2.0
-# checking error
+# checking errors
 grep -n -E "ERROR|WARN|error|failed|Failed|abort|Abort|exceeded|collision|No valid|progress" ~/.ros/log/component_container_isolated_*.log
+tail -f "$(ls -t ~/.ros/log/component_container_isolated_*.log | head -1)" | grep -n -E "ERROR|WARN|error|failed|Failed|abort|Abort|exceeded|collision|No valid|progress"
 ```
 
 ## Prerequisites

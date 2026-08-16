@@ -145,9 +145,10 @@ namespace nav2_rrtstar_planner
         const double goal_y = goal.pose.position.y;
         const double origin_x = costmap_->getOriginX();
         const double origin_y = costmap_->getOriginY();
+        // The distribution is from left edge of the costmap to right edge, and from bottom edge to top edge.
         std::uniform_real_distribution<double> sample_x(origin_x, origin_x + costmap_->getSizeInMetersX());
         std::uniform_real_distribution<double> sample_y(origin_y, origin_y + costmap_->getSizeInMetersY());
-        std::uniform_real_distribution<double> sample_bias(0.0, 1.0);
+        std::uniform_real_distribution<double> sample_bias(0.0, 1.0); // the value is between 0 and 1, and if it is less than goal_bias_, we sample the goal instead of a random point
 
         std::vector<TreeNode> tree;
         tree.reserve(max_iterations_ + 1);
@@ -167,7 +168,11 @@ namespace nav2_rrtstar_planner
                 return global_path;
             }
 
-            // Sample a random free point, biased toward the goal.
+            // suppose goal_bias_ = 0.1, then 10% of the time we sample the goal, and 90% of the time we sample a random point in the map.
+            // ~90% of iterations: the magnet is placed randomly → the tree spreads out and explores the whole map.
+            // ~10% of iterations: the magnet is placed on the goal → the tree's closest frontier gets tugged one step goal-ward.
+            // Without those occasional goal-pulls, the tree only reaches the goal by luck. Without the random ones, the tree just rams straight at the goal and gets stuck behind the first obstacle.
+            // The < goal_bias_ comparison is simply a coin flip weighted 10/90 between "pull" and "explore."
             double rx, ry;
             if (sample_bias(rng_) < goal_bias_)
             {
@@ -180,7 +185,7 @@ namespace nav2_rrtstar_planner
                 ry = sample_y(rng_);
             }
 
-            // Nearest node in the tree to the sample.
+            // Searches through all existing nodes in the tree (tree.size()) to find which node is closest to the newly sampled point.
             int nearest = 0;
             double nearest_dist = std::numeric_limits<double>::infinity();
             for (size_t i = 0; i < tree.size(); ++i)
@@ -198,6 +203,7 @@ namespace nav2_rrtstar_planner
             double new_y = ry;
             if (nearest_dist > step_size_)
             {
+                // √(Δx² + Δy²) · step_size_ / nearest_dist  =  nearest_dist · step_size_ / nearest_dist  =  step_size_
                 new_x = tree[nearest].x + (rx - tree[nearest].x) * step_size_ / nearest_dist;
                 new_y = tree[nearest].y + (ry - tree[nearest].y) * step_size_ / nearest_dist;
             }
@@ -284,6 +290,9 @@ namespace nav2_rrtstar_planner
         {
             const auto [ax, ay] = waypoints[i];
             const auto [bx, by] = waypoints[i + 1];
+            // divide by resolution = "one interpolated pose per costmap cell of distance,"
+            // std::max(1, …) — guarantee at least one step even for a nearly zero-length edge,
+            // so the loop below always emits the segment's start point and never divides by zero at below (s / steps).
             const int steps = std::max(1, static_cast<int>(std::ceil(euclidean(ax, ay, bx, by) / resolution_)));
             for (int s = 0; s < steps; ++s)
             {
