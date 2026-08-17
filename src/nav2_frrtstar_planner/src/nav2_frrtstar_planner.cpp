@@ -213,11 +213,13 @@ namespace nav2_frrtstar_planner
                 }
             }
             // Back off from the visibility boundary toward x_reachest.
+            // t is a unitless fraction of the edge, so the meters are converted by dividing by edge_len
             const double t = lo - clearance / edge_len;
             if (t <= 0.0)
             {
                 return false;
             }
+            // convert the fraction t back into world coordinates
             cx = reach_x + t * (anc_x - reach_x);
             cy = reach_y + t * (anc_y - reach_y);
             // The back-off is heuristic, so re-verify the shortcut before using it.

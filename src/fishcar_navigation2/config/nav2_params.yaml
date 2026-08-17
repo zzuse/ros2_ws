@@ -286,7 +286,8 @@ planner_server:
       # use_astar: false
       # allow_unknown: true
       # plugin: "nav2_astar_planner::Nav2AstarPlanner"
-      plugin: "nav2_rrtstar_planner::Nav2RRTstarPlanner"
+      # plugin: "nav2_rrtstar_planner::Nav2RRTstarPlanner"
+      plugin: "nav2_frrtstar_planner::Nav2FRRTstarPlanner"
       interpolation_resolution: 0.1
       max_iterations: 10000
       step_size: 0.15
